@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: app
+        image: scurite-service:latest
+        ports:
+        - containerPort: 7000
+        env:
+        - name: DB_USER
+          value: "your_db_user"
+        - name: DB_PASSWORD
+          value: "your_db_password"
+        - name: DB_HOST
+          value: "mysql"
+        - name: DB_NAME
+          value: "your_db_name"
+        - name: DB_PORT
+          value: "3306"
+        - name: JWT_SECRET
+          value: "your_jwt_secret"
+        - name: JWT_REFRESH_EXPIRATION
+          value: "your_jwt_refresh_expiration"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "your_db_password"
+        - name: MYSQL_DATABASE
+          value: "your_db_name"
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysql -h localhost -u root -p${DB_PASSWORD} -e "SELECT 1"
+          initialDelaySeconds: 10
+          periodSeconds: 5
